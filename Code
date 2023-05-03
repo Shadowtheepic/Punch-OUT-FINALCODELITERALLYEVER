@@ -13,6 +13,10 @@ dogecrouch = pygame.image.load('dogecrouch.jpg')
 c = pygame.image.load('cd.jpg')
 dogeswol = pygame.image.load('Swole_Doge.png')
 ambatablow = pygame.image.load('blow.jpg')
+font = pygame.font.SysFont('calibri.ttf', 38)
+phealt = font.render('Player Health:', True, (0,200,200))
+
+
 
 #doge variables
 xpos = 200
@@ -22,6 +26,7 @@ fall = 0
 isOnGround = False
 playerhp = 100
 dodge = False
+
 
 #constants
 LEFT = 0
@@ -43,36 +48,59 @@ class enemy:
         self.edodge = False
         self.hasHit = False
         self.alive = True
+        self.tick = 0
+        
         
     def draw(self, screen):
         
-        print(" enemi health is", self.ehp)
+        enemhealt = font.render('Enemy Health:', True, (255,0,0))
+        screen.blit(enemhealt,(240,0))
+        
+        enemhealthtext = font.render(str(int(self.ehp)), 1, (255,0,0))
+
+        screen.blit(enemhealthtext,(430,0))
+        
+        
         if self.alive == True:
-            screen.blit(c, (self.cxpos, self.cypos))
+            if self.hasHit == False:
+                screen.blit(c, (self.cxpos, self.cypos))
+            else:
+                screen.blit(c, (self.cxpos, self.cypos + 100))
         else:
-            screen.blit(ambatablow,(self.cxpos - 75,self.cypos))
+            screen.blit(ambatablow,(self.cxpos - 75,self.cypos-50))
         
     def getHit(self):
         self.ehp -= 5
         if self.ehp < 0:
             self.alive = False
-
+    
+    def punch(self):
+        L = random.randint(1,20)
+        if L == 1: 
+            print("something came in the mail today")
+            while self.hasHit == False:
+                self.cypos+= 2
+                if self.cypos > 400:
+                    print ("moving down")
+                    self.hasHit = True
+            while self.hasHit == True:
+                if self.hasHit == True and self.cypos > 150:
+                    print ("moving up")
+                    self.cypos -= 3
+                self.hasHit = False
+                
+            return True
+    """
     def punch(self):
         if self.alive == True:
             L = random.randint(1,20)
-            if L == 1: 
+            if L == 1:
+                self.hasHit = True
                 print("ENEMY PUNCH!!")
-                if self.hasHit == False:
-                    self.cypos+= 1
-                    if self.cypos < 400:
-                        self.hasHit = True
-                    if self.hasHit == True and self.cypos > 100:
-                        print ("moving up")
-                        self.cypos -= 3
                 return True
             else:
                 return False
-
+"""
 cd = enemy(200,150)  
 
 while not doExit and playerhp > 0:
@@ -131,6 +159,8 @@ while not doExit and playerhp > 0:
         direction = NON
     
     screen.fill((5, 5, 100))
+    
+    Healthtext = font.render(str(int(playerhp)), 1, (0,200,200))
 
     if direction == DOWN:
         screen.blit(dogecrouch, (xpos - 185,ypos+25))
@@ -139,16 +169,19 @@ while not doExit and playerhp > 0:
     elif direction == RIGHT:
         screen.blit(doge, (xpos + 75, ypos))
     elif direction == UP:
-        screen.blit(dogeswol, (xpos - 150, ypos))
+        screen.blit(dogeswol, (xpos - 150, ypos-40))
     elif direction == NON:
         screen.blit(doge, (xpos,ypos))
 
-    print("playa heal t", playerhp)
     
     if cd.punch() == True and dodge == False:
-        playerhp -= 5 
+        playerhp -= 5
+
        
     cd.draw(screen)
+    
+    screen.blit(phealt,(0,0))
+    screen.blit(Healthtext,(183,0))
  
     pygame.display.flip()
     
