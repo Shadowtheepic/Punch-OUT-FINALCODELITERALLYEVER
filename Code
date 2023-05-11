@@ -8,11 +8,13 @@ screen = pygame.display.set_mode((500, 500))
 clock = pygame.time.Clock()
 
 doExit = False
-doge = pygame.image.load('doge.jpg')
-dogecrouch = pygame.image.load('dogecrouch.jpg')
-c = pygame.image.load('cd.jpg')
-dogeswol = pygame.image.load('Swole_Doge.png')
+doge = pygame.image.load('Doge.png')
+dogecrouch = pygame.image.load('Dogecrouch.png')
+c = pygame.image.load('enemy.png')
+dogeswol = pygame.image.load('ponch.png')
 ambatablow = pygame.image.load('blow.jpg')
+buzz = pygame.image.load('miniblow.jpg')
+background = pygame.image.load('background.jpg')
 font = pygame.font.SysFont('calibri.ttf', 38)
 phealt = font.render('Player Health:', True, (0,200,200))
 
@@ -28,6 +30,11 @@ playerhp = 100
 dodge = False
 
 
+#game states
+START = 0
+PLAYING = 1
+GAMEOVER = 2
+
 #constants
 LEFT = 0
 RIGHT = 1
@@ -35,6 +42,8 @@ UP = 2
 DOWN = 3
 NON = 4
 keys = [False, False, False, False, False]
+
+game_state = START
 
 class enemy:
     
@@ -62,7 +71,9 @@ class enemy:
         
         
         if self.alive == True:
-            if self.hasHit == False:
+            if self.edodge == True:
+                screen.blit(c, (self.cxpos, self.cypos-80))
+            elif self.hasHit == False:
                 screen.blit(c, (self.cxpos, self.cypos))
             else:
                 screen.blit(c, (self.cxpos, self.cypos + 100))
@@ -70,26 +81,43 @@ class enemy:
             screen.blit(ambatablow,(self.cxpos - 75,self.cypos-50))
         
     def getHit(self):
-        self.ehp -= 5
-        if self.ehp < 0:
-            self.alive = False
+        if self.edodge == False:
+            self.ehp -= 5
+            if self.ehp < 0:
+                self.alive = False
     
     def punch(self):
-        L = random.randint(1,20)
-        if L == 1: 
-            print("something came in the mail today")
-            while self.hasHit == False:
-                self.cypos+= 2
-                if self.cypos > 400:
-                    print ("moving down")
-                    self.hasHit = True
+        if self.edodge == False:
+            if self.alive == True:
+                L = random.randint(1,20)
+                if L == 1: 
+                    print("something came in the mail today")
+                    while self.hasHit == False:
+                        self.cypos += 3
+                        print ("moving down")
+                        if self.cypos > 220:
+                            self.hasHit = True
+                        print(self.cypos)
+                    return True
+    def unpunch(self):
+        if self.hasHit ==  True:
             while self.hasHit == True:
-                if self.hasHit == True and self.cypos > 150:
-                    print ("moving up")
-                    self.cypos -= 3
-                self.hasHit = False
+                    if self.cypos >= 150:
+                        print ("moving up")
+                        self.cypos -= 3
+                        print(self.cypos)
+                    elif self.cypos < 150:
+                        self.hasHit = False
+    def dodge(self):
+        if self.alive == True:
+            L = random.randint(1,20)
+            if L == 1: 
+                self.edodge = True
                 
-            return True
+    def undodge(self):
+        if self.edodge ==  True:
+            self.edodge = False
+        
     """
     def punch(self):
         if self.alive == True:
@@ -120,6 +148,8 @@ while not doExit and playerhp > 0:
                 keys[DOWN] = True
             elif event.key == pygame.K_UP:
                 keys[UP] = True
+            else:
+                keys[NON] = False
 
             
         if event.type == pygame.KEYUP: #keyboard input
@@ -144,21 +174,22 @@ while not doExit and playerhp > 0:
         dodge = True
         direction = RIGHT
         
-        
     elif keys[DOWN]==True:
         dodge = True
         direction = DOWN
     
     elif keys[UP]==True:
+        cd.dodge()
         cd.getHit()
+        dodge = False
         direction = UP
-    
     
     else:
         dodge = False
         direction = NON
+        cd.undodge()
     
-    screen.fill((5, 5, 100))
+    screen.blit(background, (0,0))
     
     Healthtext = font.render(str(int(playerhp)), 1, (0,200,200))
 
@@ -172,19 +203,19 @@ while not doExit and playerhp > 0:
         screen.blit(dogeswol, (xpos - 150, ypos-40))
     elif direction == NON:
         screen.blit(doge, (xpos,ypos))
-
+        
+    cd.unpunch()
     
     if cd.punch() == True and dodge == False:
+        screen.blit(buzz,(xpos + 20,ypos))
         playerhp -= 5
-
-       
+        
     cd.draw(screen)
     
     screen.blit(phealt,(0,0))
     screen.blit(Healthtext,(183,0))
  
     pygame.display.flip()
-    
     
 print("yu died lol")
 
